@@ -1,0 +1,26 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "share-notes",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-09-01",
+
+  // Only serve on the custom domain (which sits behind Cloudflare Access).
+  // The *.workers.dev URL and preview URLs are disabled so nothing bypasses Access.
+  "workers_dev": false,
+  "preview_urls": false,
+  "routes": [{ "pattern": "notes.cobia.dev", "custom_domain": true }],
+
+  // No database_id needed: wrangler creates the D1 database on first deploy
+  // and reuses it afterwards. The table is created automatically on first request.
+  "d1_databases": [{ "binding": "DB", "database_name": "share-notes" }],
+
+  "observability": { "enabled": true },
+
+  // Keep variables set in the dashboard when deploying from GitHub.
+  "keep_vars": true
+
+  // Optional defense-in-depth: set these as Variables in the dashboard
+  // (Worker > Settings > Variables) to verify the Access JWT on every request.
+  //   ACCESS_TEAM_DOMAIN = "yourteam.cloudflareaccess.com"
+  //   ACCESS_AUD         = "<Application Audience (AUD) Tag>"
+}
