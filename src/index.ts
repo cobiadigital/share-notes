@@ -69,14 +69,14 @@ function text(body: string, status = 200) {
 
 // No look-alike characters (0/o, 1/l/i) so names are easy to read and type on a phone.
 const NAME_ALPHABET = "23456789abcdefghjkmnpqrstuvwxyz";
-function randomName(length = 6): string {
+function randomName(length = 4): string {
   const bytes = crypto.getRandomValues(new Uint8Array(length));
   return Array.from(bytes, (b) => NAME_ALPHABET[b % NAME_ALPHABET.length]).join("");
 }
 
 async function newNoteRedirect(db: D1Database, url: URL): Promise<Response> {
   let name = randomName();
-  for (let i = 0; i < 5 && (await getNote(db, name)); i++) name = randomName();
+  for (let i = 0; i < 10 && (await getNote(db, name)); i++) name = randomName();
   return new Response(null, {
     status: 302,
     headers: { ...baseHeaders, Location: new URL(`/${name}`, url).toString() },
