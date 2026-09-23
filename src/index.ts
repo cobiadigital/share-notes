@@ -67,6 +67,22 @@ function text(body: string, status = 200) {
   });
 }
 
+// No look-alike characters (0/o, 1/l/i) so names are easy to read and type on a phone.
+const NAME_ALPHABET = "23456789abcdefghjkmnpqrstuvwxyz";
+function randomName(length = 6): string {
+  const bytes = crypto.getRandomValues(new Uint8Array(length));
+  return Array.from(bytes, (b) => NAME_ALPHABET[b % NAME_ALPHABET.length]).join("");
+}
+
+async function newNoteRedirect(db: D1Database, url: URL): Promise<Response> {
+  let name = randomName();
+  for (let i = 0; i < 5 && (await getNote(db, name)); i++) name = randomName();
+  return new Response(null, {
+    status: 302,
+    headers: { ...baseHeaders, Location: new URL(`/${name}`, url).toString() },
+  });
+}
+
 async function getNote(db: D1Database, key: string): Promise<Note | null> {
   return db.prepare("SELECT content, version, updated_at FROM notes WHERE key = ?1").bind(key).first<Note>();
 }
@@ -134,6 +150,12 @@ export default {
     if (key === null) return text("Bad note name", 400);
 
     await ensureSchema(env.DB);
+
+    // The bare domain starts a fresh note with a random name.
+    if (key === "" && (request.method === "GET" || request.method === "HEAD")) {
+      return newNoteRedirect(env.DB, url);
+    }
+    if (key === "") return text("Method not allowed", 405);
 
     switch (request.method) {
       case "GET":

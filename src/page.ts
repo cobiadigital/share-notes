@@ -8,7 +8,7 @@ function safeJson(data: unknown): string {
 }
 
 export function renderPage(key: string, note: { content: string; version: number } | null): string {
-  const title = key === "" ? "/" : key;
+  const title = key;
   const initial = { key, content: note?.content ?? "", version: note?.version ?? 0 };
 
   return `<!doctype html>

@@ -7,7 +7,8 @@ note from any device. There is no index page; the only list of notes is the D1 t
 ## How it works
 
 - `GET /<name>`: the editor. Names are case-insensitive, trailing slashes are ignored,
-  and nesting like `/work/todo` is fine. `/` is a note too.
+  and nesting like `/work/todo` is fine.
+- `GET /`: redirects to a new note with a random 6-character name, e.g. `/k7m2qx`.
 - `GET /<name>?raw`: the note as plain text (handy for `curl`).
 - `GET /<name>?json`: `{ content, version, updated_at }`.
 - `PUT /<name>` with `{ content, baseVersion, force? }`: save. Returns `409` with the
@@ -19,13 +20,17 @@ note from any device. There is no index page; the only list of notes is the D1 t
 - If two devices edit at once, a banner offers **Load theirs** or **Keep mine**.
 - Saving an empty note deletes its row.
 
-## Deploy (Workers Builds, all from the dashboard)
+## Deploy (Workers Builds, all from the dashboard, no local wrangler needed)
 
-1. **Workers & Pages → Create → Import a repository** and pick this repo.
-   Build command: *(leave empty)*. Deploy command: `npx wrangler deploy`.
-2. On the first deploy, wrangler creates the `share-notes` D1 database and attaches the
-   custom domain `notes.cobia.dev` (the `cobia.dev` zone must be in the same account).
-   The `notes` table is created automatically on the first request.
+1. **Workers & Pages → Create → Import a repository**, connect GitHub, pick this repo.
+   - Project name: `share-notes` (must match `name` in `wrangler.jsonc`).
+   - Build command: *(leave empty)*. Deploy command: `npx wrangler deploy`.
+   - Production branch: `main`. Under **Builds for non-production branches**, turn it off
+     so only merges to `main` deploy.
+2. Every push or merge to `main` now builds and deploys. On the first deploy, wrangler
+   creates the `share-notes` D1 database and attaches the custom domain `notes.cobia.dev`
+   (the `cobia.dev` zone must be in the same account). The `notes` table is created
+   automatically on the first request. Build logs are under the Worker's **Deployments** tab.
 3. **Zero Trust → Access → Applications → Add → Self-hosted**, domain `notes.cobia.dev`,
    with a policy allowing just you.
 
