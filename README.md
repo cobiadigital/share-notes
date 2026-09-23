@@ -8,7 +8,7 @@ note from any device. There is no index page; the only list of notes is the D1 t
 
 - `GET /<name>`: the editor. Names are case-insensitive, trailing slashes are ignored,
   and nesting like `/work/todo` is fine.
-- `GET /`: redirects to a new note with a random 6-character name, e.g. `/k7m2qx`.
+- `GET /`: redirects to a new note with a random 4-character name, e.g. `/k7mq`.
 - `GET /<name>?raw`: the note as plain text (handy for `curl`).
 - `GET /<name>?json`: `{ content, version, updated_at }`.
 - `PUT /<name>` with `{ content, baseVersion, force? }`: save. Returns `409` with the
