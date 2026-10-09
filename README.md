@@ -11,6 +11,8 @@ note from any device. There is no index page; the only list of notes is the D1 t
 - `GET /`: redirects to a new note with a random 4-character name, e.g. `/k7mq`.
 - `GET /<name>?raw`: the note as plain text (handy for `curl`).
 - `GET /<name>?json`: `{ content, version, updated_at }`.
+- `GET /<name>/static`: the note rendered as HTML (content is treated as raw HTML; scripts
+  are blocked by CSP; empty or missing notes return 404).
 - `PUT /<name>` with `{ content, baseVersion, force? }`: save. Returns `409` with the
   server copy if someone else saved first.
 - Autosaves ~0.7s after you stop typing, and keeps an unsaved draft in `localStorage`

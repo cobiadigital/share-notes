@@ -146,8 +146,15 @@ export default {
       return url.pathname === "/robots.txt" ? text("User-agent: *\nDisallow: /\n") : new Response(null, { status: 204 });
     }
 
-    const key = noteKey(url);
+    let key = noteKey(url);
     if (key === null) return text("Bad note name", 400);
+
+    // "/<name>/static" shows the note as rendered HTML instead of the editor.
+    let staticView = false;
+    if (key.endsWith("/static") && key.length > "/static".length) {
+      staticView = true;
+      key = key.slice(0, -"/static".length);
+    }
 
     await ensureSchema(env.DB);
 
@@ -156,11 +163,26 @@ export default {
       return newNoteRedirect(env.DB, url);
     }
     if (key === "") return text("Method not allowed", 405);
+    if (staticView && request.method !== "GET" && request.method !== "HEAD") {
+      return text("Method not allowed", 405);
+    }
 
     switch (request.method) {
       case "GET":
       case "HEAD": {
         const note = await getNote(env.DB, key);
+        if (staticView) {
+          if (!note?.content) return text("Not found", 404);
+          return new Response(request.method === "HEAD" ? null : note.content, {
+            headers: {
+              ...baseHeaders,
+              "Content-Type": "text/html; charset=utf-8",
+              // Static HTML and CSS only: no scripts, no framing, no outside connections.
+              "Content-Security-Policy":
+                "default-src 'none'; img-src * data:; style-src 'unsafe-inline' *; font-src *; media-src *; frame-ancestors 'none'; base-uri 'none'; form-action 'none'",
+            },
+          });
+        }
         if (url.searchParams.has("raw")) return text(note?.content ?? "");
         if (url.searchParams.has("json")) return json(note ?? { content: "", version: 0, updated_at: 0 });
         return new Response(renderPage(key, note), {
